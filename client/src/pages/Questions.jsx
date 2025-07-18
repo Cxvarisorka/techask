@@ -1,64 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { FiSearch, FiFilter, FiX, FiChevronDown, FiHash } from 'react-icons/fi';
 import Avatar from '../components/pageComponents/profileComponents/Avatar';
-
+import useUserMethods from '../components/hooks/useUserMethods';
+import { Link } from 'react-router';
 
 const Questions = () => {
-  // Sample questions data
-  const initialQuestions = [
-    { 
-      id: 1, 
-      title: 'როგორ გამოვიყენოთ React hooks?', 
-      votes: 42, 
-      date: '2023-05-15', 
-      tags: ['react', 'javascript', 'hooks'], 
-      answered: true,
-      author: {
-        fullname: 'გიორგი გიორგაძე',
-        profileImg: ''
-      }
-    },
-    { 
-      id: 2, 
-      title: 'API-თან მუშაობის საუკეთესო პრაქტიკები', 
-      votes: 28, 
-      date: '2023-06-20', 
-      tags: ['api', 'javascript', 'async'], 
-      answered: false,
-      author: {
-        fullname: 'მარიამ მარიამიძე',
-        profileImg: ''
-      }
-    },
-    { 
-      id: 3, 
-      title: 'CSS grid vs flexbox', 
-      votes: 35, 
-      date: '2023-04-10', 
-      tags: ['css', 'frontend'], 
-      answered: true,
-      author: {
-        fullname: 'ნიკა ნიკოლოზაშვილი',
-        profileImg: ''
-      }
-    },
-  ];
-
-  // State variables
-  const [questions, setQuestions] = useState(initialQuestions);
+  const { getAllQuestions } = useUserMethods();
+  // State for original and filtered questions
+  const [originalQuestions, setOriginalQuestions] = useState([]);
+  const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [sortOption, setSortOption] = useState('ახალი');
   const [showTagDropdown, setShowTagDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pages, setPages] = useState(0);
+
   // Available tags from all questions
-  const allTags = Array.from(new Set(initialQuestions.flatMap(q => q.tags)));
+  const allTags = Array.from(new Set(originalQuestions.flatMap(q => q.tags)));
+
+  // Fetch questions on mount
+  useEffect(() => {
+    getAllQuestions(currentPage, (fetchedQuestions, info) => {
+      setOriginalQuestions(fetchedQuestions);
+      setFilteredQuestions(fetchedQuestions); // Initialize filtered questions
+      setPages(info.totalPages);
+      setCurrentPage(info.currentPage);
+    });
+  }, [currentPage]);
 
   // Filter and sort questions based on user input
   useEffect(() => {
-    let filtered = [...initialQuestions];
-    
+    let filtered = [...originalQuestions]; // Start with original questions
+
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(q => 
@@ -92,8 +68,8 @@ const Questions = () => {
         break;
     }
     
-    setQuestions(filtered);
-  }, [searchTerm, selectedTags, sortOption]);
+    setFilteredQuestions(filtered); // Update filtered questions
+  }, [searchTerm, selectedTags, sortOption, originalQuestions]);
 
   // Handle tag selection
   const handleTagClick = (tag) => {
@@ -114,6 +90,7 @@ const Questions = () => {
     setSearchTerm('');
     setSelectedTags([]);
     setSortOption('ახალი');
+    setFilteredQuestions(originalQuestions); // Reset to original questions
   };
 
   return (
@@ -240,8 +217,8 @@ const Questions = () => {
         
         {/* Questions List */}
         <div className="space-y-6">
-          {questions.length > 0 ? (
-            questions.map(question => (
+          {filteredQuestions.length > 0 ? (
+            filteredQuestions.map(question => (
               <div key={question.id} className="bg-white rounded-lg shadow overflow-hidden border border-green-100">
                 <div className="p-6">
                   <div className="flex items-start">
@@ -253,7 +230,7 @@ const Questions = () => {
                         <h3 className="text-lg font-medium text-gray-900">{question.author.fullname}</h3>
                         <span className="mx-2 text-gray-500">·</span>
                         <span className="text-sm text-gray-500">
-                          {new Date(question.date).toLocaleDateString('ka-GE')}
+                          {new Date(question.createdAt).toLocaleDateString('ka-GE')}
                         </span>
                       </div>
                       
@@ -280,27 +257,23 @@ const Questions = () => {
                       
                       <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <button className="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                            </svg>
-                            <span>{question.votes} ვოუთი</span>
-                          </button>
                           
-                          <button className="flex items-center space-x-1 text-gray-500 hover:text-green-600">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
+
+                          <Link to={`/question/${question._id}`} className="flex items-center space-x-1 text-gray-500 hover:text-green-600">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                             </svg>
-                            <span>პასუხები</span>
-                          </button>
+                            <span>სრულად ნახვა</span>
+                          </Link>
                         </div>
                         
                         <span className={`px-2 py-1 text-xs rounded-full ${
-                          question.answered 
+                          question.answers.length > 0 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {question.answered ? 'პასუხი არსებობს' : 'ელოდება პასუხს'}
+                          {question.answers.length > 0 ? 'პასუხი არსებობს' : 'ელოდება პასუხს'}
                         </span>
                       </div>
                     </div>
@@ -338,6 +311,46 @@ const Questions = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {pages > 1 && (
+          <nav className="mt-8 flex justify-center items-center space-x-2 pb-6">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              className={`px-3 py-1 rounded-md border text-sm ${
+                currentPage === 1 ? 'bg-gray-200 text-gray-400' : 'bg-white hover:bg-green-50 text-green-600 border-green-300'
+              }`}
+            >
+              წინა
+            </button>
+
+            {Array.from({ length: pages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 rounded-md border text-sm ${
+                  page === currentPage
+                    ? 'bg-green-600 text-white border-green-700'
+                    : 'bg-white hover:bg-green-50 text-green-600 border-green-300'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              disabled={currentPage === pages}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, pages))}
+              className={`px-3 py-1 rounded-md border text-sm ${
+                currentPage === pages ? 'bg-gray-200 text-gray-400' : 'bg-white hover:bg-green-50 text-green-600 border-green-300'
+              }`}
+            >
+              შემდეგი
+            </button>
+          </nav>
+        )}
+
       </div>
     </div>
   );

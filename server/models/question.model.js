@@ -17,9 +17,18 @@ const questionSchema = new mongoose.Schema(
             default: ''
         },
         author: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
+            fullname: {
+                type: String
+            },
+            id: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+                required: true,   
+            },
+            profileImg: {
+                type: String
+            }
+            
         },
         likes: [
             {
@@ -32,7 +41,13 @@ const questionSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Answer"
             }
-        ]
+        ],
+        tags: [{
+            type: String,
+            trim: true,
+            lowercase: true,
+            match: [/^[a-z0-9#]+$/, 'Invalid hashtag format.']
+        }]
     },
     {
         timestamps: true,

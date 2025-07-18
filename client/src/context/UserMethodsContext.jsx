@@ -1,5 +1,5 @@
 // კაუჭები
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { useState, createContext } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -12,7 +12,7 @@ export const UserMethodsContext = createContext();
 const API_URL = import.meta.env.VITE_API_URL + "/api";
 
 // მნიშვნელობებისა და ფუნქციების მიმწოდებელი
-export const UserMethodsProvider = ({children}) => {
+export const UserMethodsProvider = memo(({children}) => {
     const {user, checkAuth} = useAuth();
     const [notifications, setNotifications] = useState(null);
     const [friends, setFriends] = useState(null);
@@ -21,8 +21,6 @@ export const UserMethodsProvider = ({children}) => {
     const [chatWith, setChatWith] = useState(null);
 
     const {version} = useAuth();
-
-    console.log(friends)
 
     useEffect(() => {
         if(user) {
@@ -503,11 +501,57 @@ export const UserMethodsProvider = ({children}) => {
         }
     }
 
+    // ყველა პოსტის წამოღება
+    const getAllQuestions = async (page = 1, setQuestions) => {
+        try {
+            const response = await fetch(`${API_URL}/question/?page=${page}&limit=5`, {
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            if(setQuestions) {
+                console.log(data.questions)
+                setQuestions(data.questions, data);
+            }
+
+            return data;
+        } catch(err) {
+            toast.error(err);
+        }
+    }
+
+    // ერთი კონკრეტული შეკიტხვის წამოღება
+    const getQuestion = async (questionId) => {
+        try {
+            const response = await fetch(`${API_URL}/question/one/${questionId}`, {
+                credentials: 'include'
+            })
+
+            const data = await response.json();
+
+            if(!response.ok) {
+                toast.error(data);
+                return;
+            }
+
+            toast.success("შეკითხვა წარმატებით გაიხსნა!");
+            return data;
+        } catch(err) {
+            toast.error(err.message);
+        }
+    }
+
 
 
     return (
-        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification, friends, fetchFriends, getMessages, sendMessage, messages, version, addQuestion, deleteQuestion, setQuestions, questions, getQuestions, addAnswer, getAnswers, uploadProfileImage, toggleLike}}>
+        <UserMethodsContext.Provider value={{searchUsers, fetchUser, addFriend, rejectFriendRequest, cancelFriendRequest, acceptFriendRequest, removeFriend, notifications, setNotifications, deleteAllNotification, getNotification, friends, fetchFriends, getMessages, sendMessage, messages, version, addQuestion, deleteQuestion, setQuestions, questions, getQuestions, getQuestion, addAnswer, getAnswers, uploadProfileImage, toggleLike, getAllQuestions}}>
             {children}
         </UserMethodsContext.Provider>
     )
-}
+});

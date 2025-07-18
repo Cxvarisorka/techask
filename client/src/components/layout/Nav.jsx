@@ -11,7 +11,7 @@ const RenderSearchResults = ({ results, setSearchResults }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-md shadow-lg max-h-60 w-full overflow-y-auto z-50 border border-gray-200">
+    <div className="absolute top-full mt-2 right-0 bg-white text-black rounded-md shadow-xl max-h-60 w-full overflow-y-auto z-50 border border-gray-200">
       {results.length ? (
         <>
           {results.map((user) => (
@@ -55,13 +55,13 @@ const UserSearch = ({ onSearch, results, setSearchResults }) => {
             placeholder="მოძებნე USER..."
             name="query"
             required
-            className="w-full px-4 py-2 text-gray-800 rounded-lg border-0 focus:outline-none transition-all duration-200 bg-white"
+            className="w-full px-4 py-2 text-gray-800 rounded-xl border-0 focus:outline-none transition-all duration-200 bg-white"
           />
         </div>
 
         <button
           type="submit"
-          className="bg-green-500 hover:bg-transparent hover:border hover:border-green-500 text-white hover:text-green-500 px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+          className="bg-green-500 hover:bg-transparent hover:border hover:border-green-500 text-white hover:text-green-500 px-4 py-2 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2"
         >
           <span>ძიება</span>
           <svg
@@ -112,7 +112,7 @@ const NotificationDropdown = ({ notifications, setNotifications, markAsRead, del
   };
 
   return (
-    <div className="absolute right-0 mt-2 w-80 bg-white text-black rounded-md shadow-lg z-50 border border-gray-200 overflow-hidden">
+    <div className="absolute right-0 mt-2 w-80 bg-white text-black rounded-md shadow-xl z-50 border border-gray-200 overflow-hidden">
       <div className="p-4 font-bold border-b border-gray-300">შეტყობინებები</div>
       <div className="max-h-60 overflow-y-auto divide-y divide-gray-100">
         {notifications?.length ? (
@@ -178,7 +178,7 @@ const Nav = () => {
 
                 {/* Hamburger */}
                 <button
-                    className="lg:hidden text-white"
+                    className="xl:hidden text-white"
                     onClick={() => setMenuOpen((prev) => !prev)}
                 >
                     {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -186,11 +186,11 @@ const Nav = () => {
 
                 {/* Nav content */}
                 <div
-                    className={`w-full lg:flex lg:items-center lg:justify-between lg:space-x-6 mt-4 lg:mt-0 ${
+                    className={`w-full xl:flex xl:items-center xl:justify-between xl:space-x-6 mt-4 xl:mt-0 ${
                         menuOpen ? "block" : "hidden"
                     }`}
                 >
-                <ul className="flex flex-col md:flex-row space-y-2 lg:space-y-0 md:space-x-6">
+                <ul className="flex flex-col md:flex-row space-y-2 xl:space-y-0 md:space-x-6">
                     <li>
                         <Link
                             to="/"
@@ -226,6 +226,10 @@ const Nav = () => {
                             
                             <li>
                               <Link to={`/chat`}>მესიჯები</Link>
+                            </li>
+
+                            <li>
+                              <Link to={`/questions`}>შეკითხვები</Link>
                             </li>
 
                             <li className="relative">
@@ -274,7 +278,7 @@ const Nav = () => {
                 </ul>
 
                 {/* Search and Contact */}
-                    <div className="flex flex-col lg:flex-row gap-4 lg:items-center mt-4 lg:mt-0 w-full lg:w-auto">
+                    <div className="flex flex-col xl:flex-row gap-4 xl:items-center mt-4 xl:mt-0 w-full xl:w-auto">
                         {user && (
                             <UserSearch
                                 onSearch={handleSearch}

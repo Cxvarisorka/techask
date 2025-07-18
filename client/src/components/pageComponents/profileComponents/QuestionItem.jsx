@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Avatar from "./Avatar";
+import { Link } from "react-router";
 
 const Answers = ({ answers, onAnswerSubmit, currentUser }) => {
   const [newAnswer, setNewAnswer] = useState('');
@@ -81,7 +82,6 @@ const QuestionItem = ({ question, user, addAnswer, deleteQuestion, getAnswers, a
   const handleAnswerSubmit = async (answerText) => {
     const answer = await addAnswer(question._id, answerText);
     if(answer) setAnswers([...answers, answer]);
-    
   };
 
   useEffect(() => {
@@ -96,13 +96,12 @@ const QuestionItem = ({ question, user, addAnswer, deleteQuestion, getAnswers, a
   };
 
   const toggleDropdown = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     setShowDropdown(!showDropdown);
   };
 
   const handleEdit = () => {
     setShowDropdown(false);
-    // Add your edit logic here
     console.log("Edit question");
   };
 
@@ -111,7 +110,6 @@ const QuestionItem = ({ question, user, addAnswer, deleteQuestion, getAnswers, a
     deleteQuestion(question._id);
   };
 
-  // Close dropdown when clicking anywhere else
   useEffect(() => {
     const handleClickOutside = () => {
       if (showDropdown) {
@@ -160,7 +158,7 @@ const QuestionItem = ({ question, user, addAnswer, deleteQuestion, getAnswers, a
         <Avatar user={user} size="small" />
         <div className="flex-1 w-full flex flex-col sm:gap-0 gap-3">
           <div className="flex sm:flex-row flex-col-reverse sm:items-center">
-            <h3 className="font-bold text-gray-800 hover:underline cursor-pointer">{user.fullname}</h3>
+            <h3 className="font-bold text-gray-800 hover:underline cursor-pointer"><Link to={`/profile/${question.author.id}`}>{question.author.fullname}</Link></h3>
             <span className="mx-1 text-gray-500 sm:block hidden">·</span>
             <span className="text-gray-500 text-sm">
               {new Date(question.createdAt).toLocaleString()}
@@ -168,6 +166,20 @@ const QuestionItem = ({ question, user, addAnswer, deleteQuestion, getAnswers, a
           </div>
           <p className="mt-1 text-gray-800 font-semibold text-lg">{question.title}</p>
           <p className="text-gray-700 mt-2">{question.description}</p>
+          
+          {/* Tags display */}
+          {question.tags?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {question.tags.map((tag, index) => (
+                <span 
+                  key={index} 
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
           
           {question.image && (
             <div className="mt-3">
@@ -202,14 +214,13 @@ const QuestionItem = ({ question, user, addAnswer, deleteQuestion, getAnswers, a
             </div>
           )}
 
-          <div className="flex xs:flex-col  justify-between mt-3 pt-3 border-t border-gray-200">
+          <div className="flex xs:flex-col justify-between mt-3 pt-3 border-t border-gray-200">
             <button 
               className={`flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-gray-100 ${
                 likes?.includes(authUser._id) ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500'
               }`}
               onClick={handleLikeClick}
             >
-
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
               </svg>

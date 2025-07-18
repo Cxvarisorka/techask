@@ -11,9 +11,11 @@ const imageUpload = require("../utils/uploadImage");
 const addQuestion = async (req, res) => {
     try {
         // შეკითხვის შესაქმნელად აუცი;ლებელი ინფორმაციის მიღება
-        const {title, description} = req.body;
+        const {title, description, tags} = req.body;
         const image = req.file.path;
         const author = req.user.id;
+
+        console.log(tags)
 
         // მომხმარებლის მოძიება
         const user = await User.findById(author);
@@ -29,7 +31,12 @@ const addQuestion = async (req, res) => {
             title,
             description,
             image: result.secure_url,
-            author
+            author: {
+                fullname: user.fullname,
+                id: user._id,
+                profileImg: user.profileImg
+            },
+            tags: tags
         });
 
         // შევინახოთ ბაზაში
@@ -86,7 +93,7 @@ const deleteQuestion = async (req, res) => {
 
         if(!question) res.status(404).json('შეკითხვა ვერ მოიძებნა!');
 
-        if(question.author != userId) res.status(401).json('თქვენ არ გაქვთ ამ პოსტის წაშლის უფლება!');
+        if(question.author.id != userId) return res.status(401).json('თქვენ არ გაქვთ ამ პოსტის წაშლის უფლება!');
 
         if(question.image) {
             deleteImage(question.image)
@@ -101,25 +108,67 @@ const deleteQuestion = async (req, res) => {
 }
 
 // შეკიტხვების მიღება
-const getQuestions = async (req, res) => {
+const getUserQuestions = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // შეამოწმე, არსებობს თუ არა მომხმარებელი
+        // Check if user exists
         const userExists = await User.findById(userId);
-
         if (!userExists) {
             return res.status(404).json("მომხმარებელი არ არსებობს.");
         }
 
-        // მოძებნე ყველა შეკითხვა, რომელიც ეკუთვნის ამ მომხმარებელს
-        const questions = await Question.find({ author: userId });
+        // Find questions with author.id matching userId
+        const questions = await Question.find({ 'author.id': userId });
 
         res.status(200).json(questions);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
+// შეკითხვის წამორება id მეშვეპობით
+const getQuestion = async (req, res) => {
+    try {
+        const {questionId} = req.params;
+
+        if(!questionId) return res.status(301).json("შეკიტხვის მოსაძიებლად აუცილებელია ID!");
+
+        const question = await Question.findById(questionId);
+
+        if(!question) return res.status(404).json("შეკითხვის მოძიება ვერ მოხერხდა!");
+
+        res.json(question);
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+// ყველა არსებული შეკითხვის წამოღება პაგინაციით (ინფინიტ სკროლისთვის)
+const getAllQuestions = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;      // მიმდინარე გვერდი
+        const limit = parseInt(req.query.limit) || 10;   // რამდენი შეკითხვა წამოვიღოთ ერთდროულად
+        const skip = (page - 1) * limit;
+
+        const questions = await Question.find()
+            .sort({ createdAt: -1 }) // ახალი ჯერ
+            .skip(skip)
+            .limit(limit);
+
+        const total = await Question.countDocuments();
+
+        res.status(200).json({
+            questions,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            totalQuestions: total,
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 
 // შეკითხვის მოწონება / ან არ მოწონება
 const toggleLike = async (req, res) => {
@@ -148,4 +197,4 @@ const toggleLike = async (req, res) => {
 };
 
 
-module.exports = {addQuestion, getQuestions, deleteQuestion, toggleLike};
+module.exports = {addQuestion, getUserQuestions, getAllQuestions, getQuestion, deleteQuestion, toggleLike};

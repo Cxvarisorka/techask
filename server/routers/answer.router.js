@@ -10,7 +10,7 @@ const contentFilterOpenAi = require("../middlewares/AI Filters/contentFilterOpen
 
 const answerRouter = express.Router();
 
-answerRouter.post('/:questionId', verifyToken, express.json(), contentFilterOpenAi, addAnswer);
+answerRouter.post('/:questionId', verifyToken, express.json(), addAnswer);
 answerRouter.get('/question/:questionId', verifyToken, express.json(), getAnswers);
 answerRouter.put('/:id', verifyToken, express.json(), editAnswer);
 answerRouter.delete('/:id', verifyToken, deleteAnswer);

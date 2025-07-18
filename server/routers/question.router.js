@@ -1,7 +1,7 @@
 const express = require("express");
 
 // controllers
-const { addQuestion, getQuestions, deleteQuestion, toggleLike } = require("../controllers/question.controller.js");
+const { addQuestion, getUserQuestions, deleteQuestion, toggleLike, getAllQuestions, getQuestion } = require("../controllers/question.controller.js");
 
 // middlewares
 const verifyToken = require("../middlewares/auth.js");
@@ -14,9 +14,11 @@ const contentFilterDeepSeek = require("../middlewares/AI Filters/contentFilterDe
 
 const questionRouter = express.Router();
 
-questionRouter.post('/', verifyToken, upload.single('image'), contentFilterOpenAi, addQuestion);
+questionRouter.post('/', verifyToken, upload.single('image'), addQuestion);
+questionRouter.get('/one/:questionId', verifyToken, getQuestion);
 questionRouter.put('/like/:questionId', verifyToken, toggleLike)
 questionRouter.delete('/:questionId', verifyToken, deleteQuestion);
-questionRouter.get('/:userId', verifyToken, getQuestions)
+questionRouter.get('/:userId', verifyToken, getUserQuestions);
+questionRouter.get('/', verifyToken, getAllQuestions);
 
 module.exports = questionRouter;
