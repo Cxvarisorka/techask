@@ -16,7 +16,6 @@ export const AuthProvider = ({children}) => {
     // ავტორიზაციის შედეგად მიღებული მონაცემების შესანახად (მდგომარეობა)
     const [user, setUser] = useState(null);
 
-
     // მექანიკურად re-render
     const [version, setVersion] = useState(0);
 
@@ -64,6 +63,16 @@ export const AuthProvider = ({children}) => {
 
         socket.on('friendRemoved', ({ from, message }) => {
             toast.info(`${message} ${from.fullname}საგან`);
+            setVersion(prev => prev + 1);
+        });
+
+        socket.on('message', ({ from, text }) => {
+            toast.info(`მიღებული შეტყობინება ${from.fullname}საგან: ${text}`);
+             try {
+                notificationSound.play(); // ✅ Play sound on new message
+            } catch (err) {
+                console.warn("🔇 Failed to play sound:", err);
+            }
             setVersion(prev => prev + 1);
         });
 

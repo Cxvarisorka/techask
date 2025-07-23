@@ -45,8 +45,12 @@ const addQuestion = async (req, res) => {
         // მესიჯის გაგზავნა მეგობრებთან ტუ ისინი არიან ონლაინ
         const friends = user.friends || [];
 
+        console.log(friends)
+
         const notifications = friends.map(async friendId => {
             const friendSocketId = req.onlineUsers.get(friendId.toString());
+
+            console.log(friendSocketId)
 
             // თუ მეგობრები არიან ონლაინ გავაგზავნოთ მესიჯი რეალურ დროში
             if (friendSocketId) {
